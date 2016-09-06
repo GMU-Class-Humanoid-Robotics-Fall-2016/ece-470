@@ -1,0 +1,6 @@
+Formulas to figure out End Effector Point
+
+For 2-D we can use these formulas:
+
+x = L1*cos(theta1) + L2*cos(theta1+theta2) + L3*cos(theta1+theta2+theta3)
+y = L1*sin(theta1) + L2*sin(theta1+theta2) + L3*sin(theta1+theta2+theta3)
