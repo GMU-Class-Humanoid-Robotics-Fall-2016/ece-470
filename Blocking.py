@@ -9,8 +9,8 @@ def main():
 		foo()
 		t1 = time.time()
 		dt = t1 - t0
+		print dt
 		while(0 < (1 - dt)):
 			dt = time.time() - t0
-		print dt
 
 main()
