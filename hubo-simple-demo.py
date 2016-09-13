@@ -54,11 +54,13 @@ while(True):
 	[statuss, framesizes] = s.get(state, wait=False, last=False)
 	t1 = state.time
 	dt = t1-t0
+	simdt = t1-t0+0.5
 	if i == 0:
 		i = 1
 		continue
-	print dt
-	time.sleep(1 - dt)
+	print "actual = ", dt
+	print "sim = ", simdt
+	time.sleep(1.5 - dt)
 
 #Set Left Elbow Bend (LEB) and Right Shoulder Pitch (RSP) to  -0.2 rad and 0.1 rad respectively
 ref.ref[ha.LEB] = -0.2
