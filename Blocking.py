@@ -5,11 +5,12 @@ def foo():
 
 def main():
 	while(True):
-		t0 = time.clock()
-		t1 = time.clock()
+		t0 = time.time()
+		foo()
+		t1 = time.time()
 		dt = t1 - t0
 		while(0 < (1 - dt)):
-			dt = time.clock() - t0
+			dt = time.time() - t0
 		print dt
 
 main()
