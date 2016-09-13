@@ -1,16 +1,15 @@
 import time
 
 def foo():
-	time.sleep(1)
+	time.sleep(0.20)
 
 def main():
 	while(True):
-		t0 = time.clock()
-		print t0
+		t0 = time.time()
 		foo()
-		t1 = time.clock()
-		print t1
+		t1 = time.time()
 		dt = t1 - t0
-		time.sleep(.20 - (dt))
+		time.sleep(1 - dt)
 		print dt
+
 main()
