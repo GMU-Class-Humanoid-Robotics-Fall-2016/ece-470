@@ -58,6 +58,7 @@ ref = ha.HUBO_REF()
 [statuss, framesizes] = s.get(state, wait=False, last=False)
 
 # Walking of HUBO
+print "Bend"
 positionBend = [0.1, 0.2, 0.3]
 for x in positionBend:
 	ref.ref[ha.LSR] = x
@@ -76,7 +77,8 @@ for x in positionBend:
 simSleep(0.2)
 
 for i in range(3):
-	positionTilt = [0, 0.01, 0.02, 0.03]
+	print "tilt"	
+	positionTilt = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.07, 0.09, 0.1]
 	for x in positionTilt:
 		ref.ref[ha.RHR] = x
 		ref.ref[ha.RAR] = -x
@@ -89,7 +91,8 @@ for i in range(3):
 
 	simSleep(0.2)
 
-	positionLiftFoot = .5
+	print "lift foot"
+	positionLiftFoot = .3
 	ref.ref[ha.LHP] = -positionLiftFoot
 	ref.ref[ha.LKN] = 2*positionLiftFoot
 	ref.ref[ha.LAP] = -positionLiftFoot
@@ -98,7 +101,8 @@ for i in range(3):
 	r.put(ref)
 	simSleep(0.2)
 
-	positionExtendFoot = .4
+	print "extend foot"
+	positionExtendFoot = .2
 	ref.ref[ha.LKN] = 2*positionExtendFoot
 	ref.ref[ha.LAP] = -(positionExtendFoot - positionExtendFoot/2)
 
@@ -106,7 +110,8 @@ for i in range(3):
 	r.put(ref)
 	simSleep(0.2)
 
-	positionTilt = [0.03, 0.02, 0.01, 0]
+	print "tilt"
+	positionTilt = [0.1, 0.09, 0.07, 0.05, 0.04, 0.03, 0.02, 0.01, 0]
 	for x in positionTilt:
 		ref.ref[ha.RHR] = x
 		ref.ref[ha.RAR] = -x
@@ -119,6 +124,7 @@ for i in range(3):
 
 	simSleep(0.2)
 
+	print "center"
 	positionOriginal = 0.4
 	ref.ref[ha.LHP] = -positionOriginal
 	ref.ref[ha.LKN] = 2*positionOriginal
@@ -128,6 +134,7 @@ for i in range(3):
 	r.put(ref)
 	simSleep(0.2)
 	
+	print "tilt"
 	positionTilt = [0, 0.01, 0.02, 0.03]
 	for x in positionTilt:
 		ref.ref[ha.RHR] = x
@@ -141,6 +148,7 @@ for i in range(3):
 
 	simSleep(0.2)
 
+	print "lift foot"
 	positionLiftFoot = .5
 	ref.ref[ha.RHP] = -positionLiftFoot
 	ref.ref[ha.RKN] = 2*positionLiftFoot
@@ -150,6 +158,7 @@ for i in range(3):
 	r.put(ref)
 	simSleep(0.2)
 
+	print "extend foot"
 	positionExtendFoot = .4
 	ref.ref[ha.RKN] = 2*positionExtendFoot
 	ref.ref[ha.RAP] = -(positionExtendFoot - positionExtendFoot/2)
@@ -158,6 +167,7 @@ for i in range(3):
 	r.put(ref)
 	simSleep(0.2)
 
+	print "tilt"
 	positionTilt = [0.03, 0.02, 0.01, 0]
 	for x in positionTilt:
 		ref.ref[ha.RHR] = x
@@ -171,6 +181,7 @@ for i in range(3):
 
 	simSleep(0.2)
 
+	print "center"
 	positionOriginal = 0.4
 	ref.ref[ha.RHP] = -positionOriginal
 	ref.ref[ha.RKN] = 2*positionOriginal
@@ -180,6 +191,7 @@ for i in range(3):
 	r.put(ref)
 	simSleep(0.2)
 
+print "stand"
 positionBend = [0.3, 0.2, 0.1, 0]
 for x in positionBend:
 	ref.ref[ha.LSR] = x
