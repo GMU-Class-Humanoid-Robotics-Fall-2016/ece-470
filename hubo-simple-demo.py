@@ -92,29 +92,26 @@ for i in range(3):
 	simSleep(0.2)
 
 	print "lift foot"
-	positionLiftFoot = [0.31, 0.32, 0.33]
-	for x in positionLiftFoot:
-		ref.ref[ha.LHP] = -x
-		ref.ref[ha.LKN] = 2*x 
-		ref.ref[ha.LAP] = -x 
+	positionLiftFoot = 0.5
+	ref.ref[ha.LHP] = -positionLiftFoot
+	ref.ref[ha.LKN] = 2*positionLiftFoot
+	ref.ref[ha.LAP] = -positionLiftFoot
 	
-		# Write to the feed-forward channel
-		r.put(ref)
-		simSleep(0.2)
-
-	simSleep(1)
+	# Write to the feed-forward channel
+	r.put(ref)
+	simSleep(0.5)
 
 	print "extend foot"
-	positionExtendFoot = .2
+	positionExtendFoot = .4
 	ref.ref[ha.LKN] = 2*positionExtendFoot
-	ref.ref[ha.LAP] = -(positionExtendFoot - 0.1)
+	ref.ref[ha.LAP] = -(positionExtendFoot - positionExtendFoot/2)
 
 	# Write to the feed-forward channel
 	r.put(ref)
 	simSleep(2)
 
 	print "tilt"
-	positionTilt = [0.1, 0.09, 0.07, 0.05, 0.04, 0.03, 0.02, 0.01, 0]
+	positionTilt = [0.12, 0.1, 0.09, 0.07, 0.05, 0.04, 0.03, 0.02, 0.01, 0]
 	for x in positionTilt:
 		ref.ref[ha.RHR] = x
 		ref.ref[ha.RAR] = -x
