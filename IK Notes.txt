@@ -1,0 +1,7 @@
+initial at 0.8m; theta2 = 0, theta1 = 0
+bend to 0.5m; theta2 = 2, theta1 = -1
+bend back to 0.8m; theta2 = 0, theta1 = 0
+
+theta2 = arccos( (x^2 + y^2 - d1^2 - d2^2) / (2*d1*d2) )
+theta1 = arctan2( (y*(d1+d2*cos(theta2)) - x*(d2*sin(theta2))) / (x*(d1+d2*cos(theta2)) + y*(d2*sin(theta2))) )
+
