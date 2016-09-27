@@ -58,145 +58,18 @@ ref = ha.HUBO_REF()
 [statuss, framesizes] = s.get(state, wait=False, last=False)
 
 # Walking of HUBO
-positionBend = [0.1, 0.2, 0.3]
-for x in positionBend:
-	ref.ref[ha.LSR] = x
-	ref.ref[ha.RSR] = -x
-	ref.ref[ha.RHP] = -x
-	ref.ref[ha.RKN] = 2*x
-	ref.ref[ha.RAP] = -x
-	ref.ref[ha.LHP] = -x
-	ref.ref[ha.LKN] = 2*x
-	ref.ref[ha.LAP] = -x
+for i in range(1):
+	ref.ref[ha.LHP] = -1
+	ref.ref[ha.RHP] = -1
 
-	# Write to the feed-forward channel
+	ref.ref[ha.LKN] = 2
+	ref.ref[ha.RKN] = 2
+
+	ref.ref[ha.LAP] = -1
+	ref.ref[ha.RAP] = -1
+
 	r.put(ref)
-	simSleep(0.02)
-
-simSleep(0.2)
-
-for i in range(2):
-	positionTilt = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.07, 0.09, 0.1, 0.12]
-	for x in positionTilt:
-		ref.ref[ha.RHR] = x
-		ref.ref[ha.RAR] = -x
-		ref.ref[ha.LHR] = x
-		ref.ref[ha.LAR] = -x
-
-		# Write to the feed-forward channel
-		r.put(ref)
-		simSleep(0.2)
-
-	simSleep(.5)
-
-	positionLiftFoot = 0.4
-	ref.ref[ha.LHP] = -positionLiftFoot
-	ref.ref[ha.LKN] = 2*positionLiftFoot
-	ref.ref[ha.LAP] = -positionLiftFoot
-	
-	# Write to the feed-forward channel
-	r.put(ref)
-	simSleep(0.5)
-
-	positionExtendFoot = 0.3
-	ref.ref[ha.LKN] = 2*positionExtendFoot
-	ref.ref[ha.LAP] = -(positionExtendFoot - positionExtendFoot/2)
-
-	# Write to the feed-forward channel
-	r.put(ref)
-	simSleep(0.5)
-
-	positionTilt = [0.12, 0.1, 0.09, 0.07, 0.05, 0.04, 0.03, 0.02, 0.01, 0]
-	for x in positionTilt:
-		ref.ref[ha.RHR] = x
-		ref.ref[ha.RAR] = -x
-		ref.ref[ha.LHR] = x
-		ref.ref[ha.LAR] = -x
-
-		# Write to the feed-forward channel
-		r.put(ref)
-		simSleep(0.2)
-
-	positionOriginal = 0.3
-	ref.ref[ha.LHP] = -positionOriginal
-	ref.ref[ha.LKN] = 2*positionOriginal
-	ref.ref[ha.LAP] = -positionOriginal
-
-	# Write to the feed-forward channel
-	r.put(ref)
-	
-	positionTilt = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.07, 0.09, 0.1, 0.12]
-	for x in positionTilt:
-		ref.ref[ha.RHR] = -x
-		ref.ref[ha.RAR] = x
-		ref.ref[ha.LHR] = -x
-		ref.ref[ha.LAR] = x
-
-		# Write to the feed-forward channel
-		r.put(ref)
-		simSleep(0.2)
-
-	simSleep(0.2)
-
-	positionOriginal = 0.3
-	ref.ref[ha.RHP] = -positionOriginal
-	ref.ref[ha.RKN] = 2*positionOriginal
-	ref.ref[ha.RAP] = -positionOriginal
-
-	# Write to the feed-forward channel
-	r.put(ref)
-	simSleep(0.2)
-
-	positionFoot = 0.4
-	ref.ref[ha.RHP] = -positionFoot
-	ref.ref[ha.RKN] = 2*positionFoot
-	ref.ref[ha.RAP] = -positionFoot
-
-	# Write to the feed-forward channel
-	r.put(ref)
-	simSleep(0.2)
-
-	positionExtendFoot = 0.3
-	ref.ref[ha.RKN] = 2*positionExtendFoot
-	ref.ref[ha.RAP] = -(positionExtendFoot - positionExtendFoot/2)
-
-	# Write to the feed-forward channel
-	r.put(ref)
-	simSleep(0.5)
-
-	positionTilt = [0.12, 0.1, 0.09, 0.07, 0.05, 0.04, 0.03, 0.02, 0.01, 0]
-	for x in positionTilt:
-		ref.ref[ha.RHR] = -x
-		ref.ref[ha.RAR] = x
-		ref.ref[ha.LHR] = -x
-		ref.ref[ha.LAR] = x
-
-		# Write to the feed-forward channel
-		r.put(ref)
-		simSleep(0.2)
-
-	positionOriginal = 0.3
-	ref.ref[ha.RHP] = -positionOriginal
-	ref.ref[ha.RKN] = 2*positionOriginal
-	ref.ref[ha.RAP] = -positionOriginal
-
-	# Write to the feed-forward channel
-	r.put(ref)
-
-positionBend = [0.2, 0.1, 0]
-for x in positionBend:
-	ref.ref[ha.LSR] = x
-	ref.ref[ha.RSR] = -x
-	ref.ref[ha.RHP] = -x
-	ref.ref[ha.RKN] = 2*x
-	ref.ref[ha.RAP] = -x
-	ref.ref[ha.LHP] = -x
-	ref.ref[ha.LKN] = 2*x
-	ref.ref[ha.LAP] = -x
-
-	# Write to the feed-forward channel
-	r.put(ref)
-	simSleep(0.2)
+	#simSleep(0.2)
 
 # Close the connection to the channels
 r.close()
