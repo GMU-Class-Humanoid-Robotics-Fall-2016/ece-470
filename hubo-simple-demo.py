@@ -58,18 +58,34 @@ ref = ha.HUBO_REF()
 [statuss, framesizes] = s.get(state, wait=False, last=False)
 
 # Walking of HUBO
-for i in range(1):
-	ref.ref[ha.LHP] = -1
-	ref.ref[ha.RHP] = -1
+for i in range(4):
+	pos = [0, .2, .4, .6, .8, 1]
+	for p in pos:
+		ref.ref[ha.LHP] = -p
+		ref.ref[ha.RHP] = -p
 
-	ref.ref[ha.LKN] = 2
-	ref.ref[ha.RKN] = 2
+		ref.ref[ha.LKN] = 2*p
+		ref.ref[ha.RKN] = 2*p
+	
+		ref.ref[ha.LAP] = -p
+		ref.ref[ha.RAP] = -p
 
-	ref.ref[ha.LAP] = -1
-	ref.ref[ha.RAP] = -1
+		r.put(ref)
+		simSleep(0.5)
 
-	r.put(ref)
-	#simSleep(0.2)
+	pos = [1, .8, .6, .4, .2, 0]
+	for p in pos:
+		ref.ref[ha.LHP] = -p
+		ref.ref[ha.RHP] = -p
+
+		ref.ref[ha.LKN] = 2*p
+		ref.ref[ha.RKN] = 2*p
+	
+		ref.ref[ha.LAP] = -p
+		ref.ref[ha.RAP] = -p
+
+		r.put(ref)
+		simSleep(0.5)
 
 # Close the connection to the channels
 r.close()
