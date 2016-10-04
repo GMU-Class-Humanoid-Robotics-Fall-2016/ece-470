@@ -58,17 +58,36 @@ ref = ha.HUBO_REF()
 [statuss, framesizes] = s.get(state, wait=False, last=False)
 
 # Walking of HUBO
-for i in range(4):
-	# Squat 0.5m
-	pos = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1]
-	for p in pos:
-		ref.ref[ha.LHP] = -p
-		ref.ref[ha.RHP] = -p
+for i in range(2):
+	# Tilt right
+	pos = [0, .1, .15]
+	for x in pos:
+		ref.ref[ha.RHR] = x
+		ref.ref[ha.LHR] = x
+		
+		ref.ref[ha.RAR] = -x
+		ref.ref[ha.LAR] = -x
+		
+		r.put(ref)
+		simSleep(.25)
+	simSleep(.25)
 
-		ref.ref[ha.LKN] = 2*p
-		ref.ref[ha.RKN] = 2*p
+	# pull up left foot
+	pos = [0, .3, .6, .9]
+	for x in pos:
+		ref.ref[ha.LHP] = -x
+		ref.ref[ha.LKN] = 2*x
+		ref.ref[ha.LAP] = -x
 	
-		ref.ref[ha.LAP] = -p
+		r.put(ref)
+		simSleep(.25)
+	simSleep(.25)	
+
+	# Squat 0.2m
+	pos = [0, .1, .2, .3, .4]
+	for p in pos:
+		ref.ref[ha.RHP] = -p
+		ref.ref[ha.RKN] = 2*p
 		ref.ref[ha.RAP] = -p
 
 		r.put(ref)
