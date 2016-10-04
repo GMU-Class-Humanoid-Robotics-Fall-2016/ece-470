@@ -59,6 +59,7 @@ ref = ha.HUBO_REF()
 
 # Walking of HUBO
 for i in range(4):
+	# Squat 0.5m
 	pos = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1]
 	for p in pos:
 		ref.ref[ha.LHP] = -p
@@ -71,9 +72,10 @@ for i in range(4):
 		ref.ref[ha.RAP] = -p
 
 		r.put(ref)
-		simSleep(0.5)
+		simSleep(0.25)
 	simSleep(0.5)
 
+	# default position 0.8m
 	pos = [.9, .8, .7, .6, .5, .4, .3, .2, .1, 0]
 	for p in pos:
 		ref.ref[ha.LHP] = -p
@@ -86,7 +88,7 @@ for i in range(4):
 		ref.ref[ha.RAP] = -p
 
 		r.put(ref)
-		simSleep(0.5)
+		simSleep(0.25)
 	simSleep(0.5)
 
 # Close the connection to the channels
