@@ -71,7 +71,7 @@ for x in pos:
 simSleep(.5)
 
 # Pull up left foot
-pos = [0, .3, .6, .9]
+pos = [0, .3, .6, .9, 1.2]
 for x in pos:
 	ref.ref[ha.LHP] = -x
 	ref.ref[ha.LKN] = 2*x
@@ -83,7 +83,7 @@ simSleep(.5)
 
 for i in range(2):
 	# Squat 0.2m
-	pos = [0, .1, .2, .3, .4]
+	pos = [0, .1, .2, .3, .4, .5, .6, .7, .8]
 	for p in pos:
 		ref.ref[ha.RHP] = -p
 		ref.ref[ha.RKN] = 2*p
@@ -93,7 +93,7 @@ for i in range(2):
 		simSleep(0.25)
 
 	# Stand up
-	pos = [.4, .3, .2, .1, 0]
+	pos = [.8, .7, .6, .5, .4, .3, .2, .1, 0]
 	for p in pos:
 		ref.ref[ha.RHP] = -p
 		ref.ref[ha.RKN] = 2*p
@@ -104,7 +104,7 @@ for i in range(2):
 	simSleep(0.5)
 
 # Put down left foot
-pos = [.9, .6, .3, 0]
+pos = [1.2, .9, .6, .3, 0]
 for x in pos:
 	ref.ref[ha.LHP] = -x
 	ref.ref[ha.LKN] = 2*x
@@ -128,7 +128,7 @@ for x in pos:
 simSleep(.5)
 
 # Pull up right foot
-pos = [0, .3, .6, .9]
+pos = [0, .3, .6, .9, 1.2]
 for x in pos:
 	ref.ref[ha.RHP] = -x
 	ref.ref[ha.RKN] = 2*x
@@ -140,7 +140,7 @@ simSleep(.5)
 
 for i in range(2):
 	# Squat 0.1m
-	pos = [0, .1, .2]
+	pos = [0, .1, .2, .3, .4, .5]
 	for p in pos:
 		ref.ref[ha.LHP] = -p
 		ref.ref[ha.LKN] = 2*p
@@ -150,7 +150,7 @@ for i in range(2):
 		simSleep(0.25)
 
 	# Stand up
-	pos = [.2, .1, 0]
+	pos = [.5, .4, .3, .2, .1, 0]
 	for p in pos:
 		ref.ref[ha.LHP] = -p
 		ref.ref[ha.LKN] = 2*p
