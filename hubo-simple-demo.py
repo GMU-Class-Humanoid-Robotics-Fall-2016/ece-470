@@ -33,6 +33,7 @@ import sys
 import time
 from ctypes import *
 import math
+import numpy
 
 def simSleep(T):
 	[statuss, framesizes] = s.get(state, wait=False, last=False)
@@ -57,132 +58,6 @@ ref = ha.HUBO_REF()
 # Get the current feed-forward (state) 
 [statuss, framesizes] = s.get(state, wait=False, last=False)
 
-# Tilt right
-pos = [0, .1, .15]
-for x in pos:
-	ref.ref[ha.RHR] = x
-	ref.ref[ha.LHR] = x
-	
-	ref.ref[ha.RAR] = -x
-	ref.ref[ha.LAR] = -x
-	
-	r.put(ref)
-	simSleep(.25)
-simSleep(.5)
-
-# Pull up left foot
-pos = [0, .3, .6, .9, 1.2]
-for x in pos:
-	ref.ref[ha.LHP] = -x
-	ref.ref[ha.LKN] = 2*x
-	ref.ref[ha.LAP] = -x
-
-	r.put(ref)
-	simSleep(.25)
-simSleep(.5)	
-
-for i in range(2):
-	# Squat 0.2m
-	pos = [0, .1, .2, .3, .4, .5, .6, .7, .8]
-	for p in pos:
-		ref.ref[ha.RHP] = -p
-		ref.ref[ha.RKN] = 2*p
-		ref.ref[ha.RAP] = -p
-
-		r.put(ref)
-		simSleep(0.25)
-
-	# Stand up
-	pos = [.8, .7, .6, .5, .4, .3, .2, .1, 0]
-	for p in pos:
-		ref.ref[ha.RHP] = -p
-		ref.ref[ha.RKN] = 2*p
-		ref.ref[ha.RAP] = -p
-
-		r.put(ref)
-		simSleep(0.25)
-	simSleep(0.5)
-
-# Put down left foot
-pos = [1.2, .9, .6, .3, 0]
-for x in pos:
-	ref.ref[ha.LHP] = -x
-	ref.ref[ha.LKN] = 2*x
-	ref.ref[ha.LAP] = -x
-
-	r.put(ref)
-	simSleep(.25)
-simSleep(.5)	
-
-# Tilt left
-pos = [.15, .1, 0, -.1, -.15]
-for x in pos:
-	ref.ref[ha.RHR] = x
-	ref.ref[ha.LHR] = x
-	
-	ref.ref[ha.RAR] = -x
-	ref.ref[ha.LAR] = -x
-	
-	r.put(ref)
-	simSleep(.25)
-simSleep(.5)
-
-# Pull up right foot
-pos = [0, .3, .6, .9, 1.2]
-for x in pos:
-	ref.ref[ha.RHP] = -x
-	ref.ref[ha.RKN] = 2*x
-	ref.ref[ha.RAP] = -x
-
-	r.put(ref)
-	simSleep(.25)
-simSleep(.5)	
-
-for i in range(2):
-	# Squat 0.1m
-	pos = [0, .1, .2, .3, .4, .5]
-	for p in pos:
-		ref.ref[ha.LHP] = -p
-		ref.ref[ha.LKN] = 2*p
-		ref.ref[ha.LAP] = -p
-
-		r.put(ref)
-		simSleep(0.25)
-
-	# Stand up
-	pos = [.5, .4, .3, .2, .1, 0]
-	for p in pos:
-		ref.ref[ha.LHP] = -p
-		ref.ref[ha.LKN] = 2*p
-		ref.ref[ha.LAP] = -p
-
-		r.put(ref)
-		simSleep(0.25)
-	simSleep(0.5)
-
-# Put down right foot
-pos = [.9, .6, .3, 0]
-for x in pos:
-	ref.ref[ha.RHP] = -x
-	ref.ref[ha.RKN] = 2*x
-	ref.ref[ha.RAP] = -x
-
-	r.put(ref)
-	simSleep(.25)
-simSleep(.5)	
-
-# Tilt center
-pos = [-.15, -.1, 0]
-for x in pos:
-	ref.ref[ha.RHR] = x
-	ref.ref[ha.LHR] = x
-	
-	ref.ref[ha.RAR] = -x
-	ref.ref[ha.LAR] = -x
-	
-	r.put(ref)
-	simSleep(.25)
-simSleep(.5)
 
 # Close the connection to the channels
 r.close()
