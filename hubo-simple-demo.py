@@ -44,12 +44,35 @@ def simSleep(T):
 			break
 
 def getFK(theta):
-	X[0] = l1 * math.cos(theta[0]) + l2 * math.cos(theta[0] + theta[1]) 
-	X[1] = l1 * math.sin(theta[0]) + l2 * math.sin(theta[0] + theta[1]) 
-	return X
+	Rx = np.identity(4)
+	Rx[0,0] = np.cos(theta[0,0])
+	Rx[0,1] = np.sin(theta[0,0]) * -1
+	Rx[1,0] = np.sin(theta[0,0])
+	Rx[1,1] = np.cos(theta[0,0])
+	
+	Ry = np.identity(4)
+	Ry[0,0] = np.cos(theta[1,0])
+	Ry[0,1] = np.sin(theta[1,0])
+	Ry[1,0] = np.sin(theta[1,0]) * -1
+	Ry[1,1] = np.cos(theta[1,0])
 
-def getJac(theta, dtheta):
-	jac = np.zeros(2,2)
+	T1 = np.identity(4)
+	T1[1,3] = 179.14
+	Q1 = np.dot(Rx,T1)
+	T2 = np.identity(4)
+	T2[2,3] = 181.59
+	Q2 = np.dot(Ry,T2)
+
+	Q = np.dot(Q1, Q2)
+
+	position = np.array([[Q[0,2]],[Q[1,2]]])
+
+	#x = 179.14 * math.cos(theta[0]) + 181.59 * math.cos(theta[0] + theta[1]) 
+	#y = 179.14 * math.sin(theta[0]) + 181.59 * math.sin(theta[0] + theta[1]) 
+	return position
+
+def getJ(theta, dtheta):
+	jac = np.zeros((2,2))
 	for i in range((np.shape(jac))[0]):
 		for j in range((np.shape(jac))[1]):
 			tempTheta = np.copy(theta)
@@ -59,16 +82,33 @@ def getJac(theta, dtheta):
 	return jac
 
 def getMet(e, G):
-	m = math.sqrt((math.pow(e[0] - G[0]),2) + (math.pow(e[1] - G[1]),2))
+	m = math.sqrt(math.pow((e[0] - G[0]),2) + math.pow((e[1] - G[1]),2))
 	return m
 
-def getNext(e, G, de):
-	h = getMet(e, G)
+def getNext(e, G, de, h):
 	dx = (G[0] - e[0]) * de / h
 	dy = (G[1] - e[1]) * de / h
 	DE = np.array([[round(dx,2)],[round(dy,2)]])
 	return DE
 
+def getIK(theta, G, dtheta, de, des_err, ref, r):
+	e = getFK(theta)
+	met = getMet(e, G)
+	tempMet = met
+	while(met > des_err):
+		jac = getJ(theta, dtheta)
+		jacInv = np.linalg.pinv(jac)
+		DE = getNext(e, G, de, tempMet)
+		Dtheta = np.dot(jacInv,DE)
+		met = getMet(e, G)
+		e = getFK(theta)
+	return theta
+
+def setArms(theta, ref, r):
+	ref.ref[ha.RSP] = theta[0]
+	ref.ref[ha.RSR] = theta[1]
+
+	r.put(ref)
 
 # Open Hubo-Ach feed-forward and feed-back (reference and state) channels
 s = ach.Channel(ha.HUBO_CHAN_STATE_NAME)
@@ -83,7 +123,18 @@ state = ha.HUBO_STATE()
 ref = ha.HUBO_REF()
 
 # Get the current feed-forward (state) 
-[statuss, framesizes] = s.get(state, wait=False, last=False)
+[statuss, framesizes] = s.get(state, wait=False, last=True)
+
+theta = np.zeros((2,1))
+GOAL = np.array([[361.73-10.09298],[34.5]])
+print "get Arm angle"
+armTheta = getIK(theta, GOAL, 0.01, 4, 5, ref, r)
+print "Arm Angle =", armTheta
+setArms(armTheta, ref, r)
+print "After set"
+simSleep(0.2)
+
+
 
 # Close the connection to the channels
 r.close()
