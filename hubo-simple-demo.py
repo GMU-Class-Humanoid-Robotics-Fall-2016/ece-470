@@ -33,7 +33,7 @@ import sys
 import time
 from ctypes import *
 import math
-import numpy
+import numpy as np
 
 def simSleep(T):
 	[statuss, framesizes] = s.get(state, wait=False, last=False)
@@ -42,6 +42,33 @@ def simSleep(T):
 		[statuss, framesizes] = s.get(state, wait=True, last=False)
 		if((state.time - tick) > T):
 			break
+
+def getFK(theta):
+	X[0] = l1 * math.cos(theta[0]) + l2 * math.cos(theta[0] + theta[1]) 
+	X[1] = l1 * math.sin(theta[0]) + l2 * math.sin(theta[0] + theta[1]) 
+	return X
+
+def getJac(theta, dtheta):
+	jac = np.zeros(2,2)
+	for i in range((np.shape(jac))[0]):
+		for j in range((np.shape(jac))[1]):
+			tempTheta = np.copy(theta)
+			tempTheta[j] = theta[j] + dtheta
+			fk = getFK(tempTheta)
+			jac[i,j] = (fk[i,0]) / dtheta
+	return jac
+
+def getMet(e, G):
+	m = math.sqrt((math.pow(e[0] - G[0]),2) + (math.pow(e[1] - G[1]),2))
+	return m
+
+def getNext(e, G, de):
+	h = getMet(e, G)
+	dx = (G[0] - e[0]) * de / h
+	dy = (G[1] - e[1]) * de / h
+	DE = np.array([[round(dx,2)],[round(dy,2)]])
+	return DE
+
 
 # Open Hubo-Ach feed-forward and feed-back (reference and state) channels
 s = ach.Channel(ha.HUBO_CHAN_STATE_NAME)
@@ -57,7 +84,6 @@ ref = ha.HUBO_REF()
 
 # Get the current feed-forward (state) 
 [statuss, framesizes] = s.get(state, wait=False, last=False)
-
 
 # Close the connection to the channels
 r.close()
