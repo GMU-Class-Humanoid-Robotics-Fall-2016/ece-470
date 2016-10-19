@@ -43,70 +43,97 @@ def simSleep(T):
 		if((state.time - tick) > T):
 			break
 
-def getFK(theta):
+def RotationMatrix_x(theta_x):
 	Rx = np.identity(4)
-	Rx[0,0] = np.cos(theta[0,0])
-	Rx[0,1] = np.sin(theta[0,0]) * -1
-	Rx[1,0] = np.sin(theta[0,0])
-	Rx[1,1] = np.cos(theta[0,0])
-	
+	Rx[1,1] = np.cos(theta_x)
+	Rx[1,2] = np.sin(theta_x) * -1
+	Rx[2,1] = np.sin(theta_x)
+	Rx[2,2] = np.cos(theta_x)
+	return Rx
+
+def RotationMatrix_y(theta_y):
 	Ry = np.identity(4)
-	Ry[0,0] = np.cos(theta[1,0])
-	Ry[0,1] = np.sin(theta[1,0])
-	Ry[1,0] = np.sin(theta[1,0]) * -1
-	Ry[1,1] = np.cos(theta[1,0])
+	Ry[0,0] = np.cos(theta_y)
+	Ry[0,2] = np.sin(theta_y)
+	Ry[2,0] = np.sin(theta_y) * -1
+	Ry[2,2] = np.cos(theta_y)
+	return Ry
 
+def RotationMatrix_z(theta_z):
+	Rz = np.identity(4)
+	Rz[0,0] = np.cos(theta_z)
+	Rz[0,1] = np.sin(theta_z) * -1
+	Rz[1,0] = np.sin(theta_z)	
+	Rz[1,1] = np.cos(theta_z)
+	return Rz
+
+def getFK(theta):
 	T1 = np.identity(4)
-	T1[1,3] = 179.14
-	Q1 = np.dot(Rx,T1)
+	T1[1,3] = 95.4
 	T2 = np.identity(4)
-	T2[2,3] = 181.59
-	Q2 = np.dot(Ry,T2)
+	T3 = np.identity(4)
+	T4 = np.identity(4)
+	T4[2,3] = -179.14
+	T5 = np.identity(4)
+	T5[2,3] = -181.59
+	T6 = np.identity(4)
 
-	Q = np.dot(Q1, Q2)
+	Q1 = np.dot(RotationMatrix_y(theta[0,0]),T1)
+	Q2 = np.dot(RotationMatrix_x(theta[1,0]),T2)
+	Q3 = np.dot(RotationMatrix_z(theta[2,0]),T3)
+	Q4 = np.dot(RotationMatrix_y(theta[3,0]),T4)
+	Q5 = np.dot(RotationMatrix_z(theta[4,0]),T5)
+	Q6 = np.dot(RotationMatrix_x(theta[5,0]),T6)
 
-	position = np.array([[Q[0,2]],[Q[1,2]]])
+	Q = np.dot(np.dot(np.dot(np.dot(np.dot(Q1,Q2),Q3),Q4),Q5),Q6)
 
-	#x = 179.14 * math.cos(theta[0]) + 181.59 * math.cos(theta[0] + theta[1]) 
-	#y = 179.14 * math.sin(theta[0]) + 181.59 * math.sin(theta[0] + theta[1]) 
+	position = np.array([[Q[0,3]],[Q[1,3]], [Q[2,3]]])
+
 	return position
 
 def getJ(theta, dtheta):
-	jac = np.zeros((2,2))
+	jac = np.zeros((3,6))
 	for i in range((np.shape(jac))[0]):
 		for j in range((np.shape(jac))[1]):
 			tempTheta = np.copy(theta)
 			tempTheta[j] = theta[j] + dtheta
-			fk = getFK(tempTheta)
+			fk = getFK(theta)
 			jac[i,j] = (fk[i,0]) / dtheta
 	return jac
 
 def getMet(e, G):
-	m = math.sqrt(math.pow((e[0] - G[0]),2) + math.pow((e[1] - G[1]),2))
-	return m
+	met = math.sqrt(math.pow((e[0] - G[0]),2) + math.pow((e[1] - G[1]),2) + math.pow((e[2] - G[2]),2))
+	return met
 
 def getNext(e, G, de, h):
 	dx = (G[0] - e[0]) * de / h
 	dy = (G[1] - e[1]) * de / h
-	DE = np.array([[round(dx,2)],[round(dy,2)]])
+	dz = (G[2] - e[2]) * de / h
+	DE = np.array([[dx],[dy],[dz]])
 	return DE
 
 def getIK(theta, G, dtheta, de, des_err, ref, r):
 	e = getFK(theta)
 	met = getMet(e, G)
+	tempTheta = np.copy(theta)
 	tempMet = met
 	while(met > des_err):
-		jac = getJ(theta, dtheta)
+		jac = getJ(tempTheta, dtheta)
 		jacInv = np.linalg.pinv(jac)
 		DE = getNext(e, G, de, tempMet)
-		Dtheta = np.dot(jacInv,DE)
+		Dtheta = np.dot(jacInv, DE)
+		tempTheta = np.add(tempTheta, Dtheta)
 		met = getMet(e, G)
 		e = getFK(theta)
-	return theta
+	return tempTheta
 
 def setArms(theta, ref, r):
 	ref.ref[ha.RSP] = theta[0]
 	ref.ref[ha.RSR] = theta[1]
+	ref.ref[ha.RSY] = theta[2]
+	ref.ref[ha.REB] = theta[3]
+	ref.ref[ha.RWY] = theta[4]
+	ref.ref[ha.RWR] = theta[5]
 
 	r.put(ref)
 
@@ -125,8 +152,8 @@ ref = ha.HUBO_REF()
 # Get the current feed-forward (state) 
 [statuss, framesizes] = s.get(state, wait=False, last=True)
 
-theta = np.zeros((2,1))
-GOAL = np.array([[361.73-10.09298],[34.5]])
+theta = np.zeros((6,1))
+GOAL = np.array([[361.73-10.09298],[30.0],[60]])
 print "get Arm angle"
 armTheta = getIK(theta, GOAL, 0.01, 4, 5, ref, r)
 print "Arm Angle =", armTheta
