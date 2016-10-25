@@ -69,13 +69,13 @@ def RotationMatrix_z(theta_z):
 
 def getFK(theta):
 	T1 = np.identity(4)
-	T1[1,3] = 95.4
+	T1[0,3] = 94.5
 	T2 = np.identity(4)
 	T3 = np.identity(4)
 	T4 = np.identity(4)
-	T4[2,3] = 179.14
+	T4[2,3] = -179.14
 	T5 = np.identity(4)
-	T5[1,3] = 181.59
+	T5[2,3] = -181.59
 	T6 = np.identity(4)
 
 	Q1 = np.dot(RotationMatrix_y(theta[0,0]),T1)
@@ -113,14 +113,13 @@ def getNext(e, G, de):
 	DE = np.array([dx,dy,dz])
 	return DE
 
-def getIK(theta, G, ref, r):
+def getIK(arm, theta, G, ref, r):
 	e = getFK(theta)
 	met = getMet(e, G)
 	tempTheta = np.copy(theta)
-	tempMet = met
-	dtheta = 0.1
-	de = 4	
-	while(met > 5):
+	dtheta = 0.01
+	de = 20	
+	while(met > G[0,0]):
 		jac = getJ(tempTheta, dtheta)
 		jacInv = np.linalg.pinv(jac)
 		DE = getNext(e, G, de)
@@ -129,12 +128,23 @@ def getIK(theta, G, ref, r):
 		met = getMet(e, G)
 		e = getFK(tempTheta)
 
-		ref.ref[ha.LSP] = tempTheta[0]
-		ref.ref[ha.LSR] = tempTheta[1]
-		ref.ref[ha.LSY] = tempTheta[2]
-		ref.ref[ha.LEB] = tempTheta[3]
-		ref.ref[ha.LWY] = tempTheta[4]
-		ref.ref[ha.LWR] = tempTheta[5]
+		print 'MET=',met
+
+		if(arm == 'LEFT'):
+			ref.ref[ha.LSP] = tempTheta[0]
+			ref.ref[ha.LSR] = tempTheta[1]
+			ref.ref[ha.LSY] = tempTheta[2]
+			ref.ref[ha.LEB] = tempTheta[3]
+			ref.ref[ha.LWY] = tempTheta[4]
+			ref.ref[ha.LWR] = tempTheta[5]
+		elif(arm == 'RIGHT'):
+			ref.ref[ha.RSP] = tempTheta[0]
+			ref.ref[ha.RSR] = tempTheta[1]
+			ref.ref[ha.RSY] = tempTheta[2]
+			ref.ref[ha.REB] = tempTheta[3]
+			ref.ref[ha.RWY] = tempTheta[4]
+			ref.ref[ha.RWR] = tempTheta[5]
+
 
 		r.put(ref)
 
@@ -154,8 +164,16 @@ ref = ha.HUBO_REF()
 [statuss, framesizes] = s.get(state, wait=False, last=True)
 
 theta = np.zeros((6,1))
-GOAL = np.array([[100],[30],[60]])
-getIK(theta, GOAL, ref, r)
+LEFT = 'LEFT'
+RIGHT = 'RIGHT'
+GOAL = np.array([[350],[30],[60]])
+getIK(LEFT, theta, GOAL, ref, r)
+simSleep(0.2)
+
+print 'goal2'
+GOAL2 = np.array([[350],[-30],[60]])
+getIK(LEFT, theta, GOAL2, ref, r)
+
 simSleep(0.2)
 
 
