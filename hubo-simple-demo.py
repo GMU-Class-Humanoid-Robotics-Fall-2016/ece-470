@@ -154,7 +154,7 @@ ref = ha.HUBO_REF()
 [statuss, framesizes] = s.get(state, wait=False, last=True)
 
 theta = np.zeros((6,1))
-GOAL = np.array([[350],[30],[60]])
+GOAL = np.array([[100],[30],[60]])
 getIK(theta, GOAL, ref, r)
 simSleep(0.2)
 
