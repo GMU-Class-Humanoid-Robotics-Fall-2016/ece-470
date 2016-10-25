@@ -73,9 +73,9 @@ def getFK(theta):
 	T2 = np.identity(4)
 	T3 = np.identity(4)
 	T4 = np.identity(4)
-	T4[2,3] = -179.14
+	T4[2,3] = 179.14
 	T5 = np.identity(4)
-	T5[2,3] = -181.59
+	T5[1,3] = 181.59
 	T6 = np.identity(4)
 
 	Q1 = np.dot(RotationMatrix_y(theta[0,0]),T1)
@@ -87,7 +87,7 @@ def getFK(theta):
 
 	Q = np.dot(np.dot(np.dot(np.dot(np.dot(Q1,Q2),Q3),Q4),Q5),Q6)
 
-	position = np.array([[Q[0,3]],[Q[1,3]], [Q[2,3]]])
+	position = np.array([[Q[0,3]],[Q[1,3]],[Q[2,3]]])
 
 	return position
 
@@ -105,37 +105,38 @@ def getMet(e, G):
 	met = math.sqrt(math.pow((e[0] - G[0]),2) + math.pow((e[1] - G[1]),2) + math.pow((e[2] - G[2]),2))
 	return met
 
-def getNext(e, G, de, h):
+def getNext(e, G, de):
+	h = getMet(e, G)
 	dx = (G[0] - e[0]) * de / h
 	dy = (G[1] - e[1]) * de / h
 	dz = (G[2] - e[2]) * de / h
-	DE = np.array([[dx],[dy],[dz]])
+	DE = np.array([dx,dy,dz])
 	return DE
 
-def getIK(theta, G, dtheta, de, des_err, ref, r):
+def getIK(theta, G, ref, r):
 	e = getFK(theta)
 	met = getMet(e, G)
 	tempTheta = np.copy(theta)
 	tempMet = met
-	while(met > des_err):
+	dtheta = 0.1
+	de = 4	
+	while(met > 5):
 		jac = getJ(tempTheta, dtheta)
 		jacInv = np.linalg.pinv(jac)
-		DE = getNext(e, G, de, tempMet)
+		DE = getNext(e, G, de)
 		Dtheta = np.dot(jacInv, DE)
 		tempTheta = np.add(tempTheta, Dtheta)
 		met = getMet(e, G)
-		e = getFK(theta)
-	return tempTheta
+		e = getFK(tempTheta)
 
-def setArms(theta, ref, r):
-	ref.ref[ha.RSP] = theta[0]
-	ref.ref[ha.RSR] = theta[1]
-	ref.ref[ha.RSY] = theta[2]
-	ref.ref[ha.REB] = theta[3]
-	ref.ref[ha.RWY] = theta[4]
-	ref.ref[ha.RWR] = theta[5]
+		ref.ref[ha.LSP] = tempTheta[0]
+		ref.ref[ha.LSR] = tempTheta[1]
+		ref.ref[ha.LSY] = tempTheta[2]
+		ref.ref[ha.LEB] = tempTheta[3]
+		ref.ref[ha.LWY] = tempTheta[4]
+		ref.ref[ha.LWR] = tempTheta[5]
 
-	r.put(ref)
+		r.put(ref)
 
 # Open Hubo-Ach feed-forward and feed-back (reference and state) channels
 s = ach.Channel(ha.HUBO_CHAN_STATE_NAME)
@@ -153,12 +154,8 @@ ref = ha.HUBO_REF()
 [statuss, framesizes] = s.get(state, wait=False, last=True)
 
 theta = np.zeros((6,1))
-GOAL = np.array([[361.73-10.09298],[30.0],[60]])
-print "get Arm angle"
-armTheta = getIK(theta, GOAL, 0.01, 4, 5, ref, r)
-print "Arm Angle =", armTheta
-setArms(armTheta, ref, r)
-print "After set"
+GOAL = np.array([[350],[30],[60]])
+getIK(theta, GOAL, ref, r)
 simSleep(0.2)
 
 
