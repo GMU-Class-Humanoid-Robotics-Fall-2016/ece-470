@@ -46,7 +46,7 @@ def simSleep(T):
 def RotationMatrix_x(theta_x):
 	Rx = np.identity(4)
 	Rx[1,1] = np.cos(theta_x)
-	Rx[1,2] = np.sin(theta_x) * -1
+	Rx[1,2] = np.sin(theta_x) * -1.0
 	Rx[2,1] = np.sin(theta_x)
 	Rx[2,2] = np.cos(theta_x)
 	return Rx
@@ -55,21 +55,24 @@ def RotationMatrix_y(theta_y):
 	Ry = np.identity(4)
 	Ry[0,0] = np.cos(theta_y)
 	Ry[0,2] = np.sin(theta_y)
-	Ry[2,0] = np.sin(theta_y) * -1
+	Ry[2,0] = np.sin(theta_y) * -1.0
 	Ry[2,2] = np.cos(theta_y)
 	return Ry
 
 def RotationMatrix_z(theta_z):
 	Rz = np.identity(4)
 	Rz[0,0] = np.cos(theta_z)
-	Rz[0,1] = np.sin(theta_z) * -1
+	Rz[0,1] = np.sin(theta_z) * -1.0
 	Rz[1,0] = np.sin(theta_z)	
 	Rz[1,1] = np.cos(theta_z)
 	return Rz
 
-def getFK(theta):
+def getFK(arm, theta):
 	T1 = np.identity(4)
-	T1[0,3] = 94.5
+	if(arm == 'LEFT'):
+		T1[1,3] = 94.5
+	elif(arm == 'RIGHT'):
+		T1[1,3] = -94.5
 	T2 = np.identity(4)
 	T3 = np.identity(4)
 	T4 = np.identity(4)
@@ -87,66 +90,63 @@ def getFK(theta):
 
 	Q = np.dot(np.dot(np.dot(np.dot(np.dot(Q1,Q2),Q3),Q4),Q5),Q6)
 
-	position = np.array([[Q[0,3]],[Q[1,3]],[Q[2,3]]])
+	position = np.array([[round(Q[0,3],3)],[round(Q[1,3],3)],[round(Q[2,3],3)]])
 
 	return position
 
-def getJ(theta, dtheta):
+def getJ(arm, theta, dtheta):
 	jac = np.zeros((3,6))
 	for i in range((np.shape(jac))[0]):
 		for j in range((np.shape(jac))[1]):
 			tempTheta = np.copy(theta)
 			tempTheta[j] = theta[j] + dtheta
-			fk = getFK(theta)
+			fk = getFK(arm, tempTheta)
 			jac[i,j] = (fk[i,0]) / dtheta
 	return jac
 
 def getMet(e, G):
-	met = math.sqrt(math.pow((e[0] - G[0]),2) + math.pow((e[1] - G[1]),2) + math.pow((e[2] - G[2]),2))
+	met = math.sqrt(math.pow(e[0] - G[0],2) + math.pow(e[1] - G[1],2) + math.pow(e[2] - G[2],2))
 	return met
 
-def getNext(e, G, de):
-	h = getMet(e, G)
+def getNext(e, G, de, h):
 	dx = (G[0] - e[0]) * de / h
 	dy = (G[1] - e[1]) * de / h
 	dz = (G[2] - e[2]) * de / h
-	DE = np.array([dx,dy,dz])
+	DE = np.array([[round(dx,3)],[round(dy,3)],[round(dz,3)]])
 	return DE
 
 def getIK(arm, theta, G, ref, r):
-	e = getFK(theta)
-	met = getMet(e, G)
-	tempTheta = np.copy(theta)
 	dtheta = 0.01
-	de = 20	
-	while(met > G[0,0]):
-		jac = getJ(tempTheta, dtheta)
+	de = 15
+	e = getFK(arm, theta)
+	tempTheta = np.copy(theta)
+	met = getMet(e, G)
+	tempMet = met
+	while(met > 5):
+		jac = getJ(arm, tempTheta, dtheta)
 		jacInv = np.linalg.pinv(jac)
-		DE = getNext(e, G, de)
+		DE = getNext(e, G, de, tempMet)
 		Dtheta = np.dot(jacInv, DE)
 		tempTheta = np.add(tempTheta, Dtheta)
+		e = getFK(arm, tempTheta)
 		met = getMet(e, G)
-		e = getFK(tempTheta)
 
-		print 'MET=',met
+	if(arm == 'LEFT'):
+		ref.ref[ha.LSP] = tempTheta[0]
+		ref.ref[ha.LSR] = tempTheta[1]
+		ref.ref[ha.LSY] = tempTheta[2]
+		ref.ref[ha.LEB] = tempTheta[3]
+		ref.ref[ha.LWY] = tempTheta[4]
+		ref.ref[ha.LWR] = tempTheta[5]
+	elif(arm == 'RIGHT'):
+		ref.ref[ha.RSP] = tempTheta[0]
+		ref.ref[ha.RSR] = tempTheta[1]
+		ref.ref[ha.RSY] = tempTheta[2]
+		ref.ref[ha.REB] = tempTheta[3]
+		ref.ref[ha.RWY] = tempTheta[4]
+		ref.ref[ha.RWR] = tempTheta[5]
 
-		if(arm == 'LEFT'):
-			ref.ref[ha.LSP] = tempTheta[0]
-			ref.ref[ha.LSR] = tempTheta[1]
-			ref.ref[ha.LSY] = tempTheta[2]
-			ref.ref[ha.LEB] = tempTheta[3]
-			ref.ref[ha.LWY] = tempTheta[4]
-			ref.ref[ha.LWR] = tempTheta[5]
-		elif(arm == 'RIGHT'):
-			ref.ref[ha.RSP] = tempTheta[0]
-			ref.ref[ha.RSR] = tempTheta[1]
-			ref.ref[ha.RSY] = tempTheta[2]
-			ref.ref[ha.REB] = tempTheta[3]
-			ref.ref[ha.RWY] = tempTheta[4]
-			ref.ref[ha.RWR] = tempTheta[5]
-
-
-		r.put(ref)
+	r.put(ref)
 
 # Open Hubo-Ach feed-forward and feed-back (reference and state) channels
 s = ach.Channel(ha.HUBO_CHAN_STATE_NAME)
@@ -163,20 +163,43 @@ ref = ha.HUBO_REF()
 # Get the current feed-forward (state) 
 [statuss, framesizes] = s.get(state, wait=False, last=True)
 
-theta = np.zeros((6,1))
 LEFT = 'LEFT'
 RIGHT = 'RIGHT'
-GOAL = np.array([[350],[30],[60]])
-getIK(LEFT, theta, GOAL, ref, r)
+
+ltheta = np.zeros((6,1))
+rtheta = np.zeros((6,1))
+
+lGOAL = np.array([[351.64],[34.5],[65.0]])
+getIK(LEFT, ltheta, lGOAL, ref, r)
 simSleep(0.2)
 
-print 'goal2'
-GOAL2 = np.array([[350],[-30],[60]])
-getIK(LEFT, theta, GOAL2, ref, r)
-
+rGOAL = np.array([[351.64],[-154.5],[65.0]])
+getIK(RIGHT, rtheta, rGOAL, ref, r)
 simSleep(0.2)
 
+lGOAL2 = np.array([[351.64],[154.5],[65.0]])
+getIK(LEFT, ltheta, lGOAL2, ref, r)
+simSleep(0.2)
 
+rGOAL2 = np.array([[351.64],[-34.5],[65.0]])
+getIK(RIGHT, rtheta, rGOAL2, ref, r)
+simSleep(0.2)
+
+lGOAL3 = np.array([[351.64],[154.5],[-65.0]])
+getIK(LEFT, ltheta, lGOAL3, ref, r)
+simSleep(0.2)
+
+rGOAL3 = np.array([[351.64],[-34.5],[-65.0]])
+getIK(RIGHT, rtheta, rGOAL3, ref, r)
+simSleep(0.2)
+
+lGOAL4 = np.array([[351.64],[34.5],[-65.0]])
+getIK(LEFT, ltheta, lGOAL4, ref, r)
+simSleep(0.2)
+
+rGOAL4 = np.array([[351.64],[-154.5],[-65.0]])
+getIK(RIGHT, rtheta, rGOAL4, ref, r)
+simSleep(0.2)
 
 # Close the connection to the channels
 r.close()
