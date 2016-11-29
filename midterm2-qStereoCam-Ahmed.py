@@ -118,15 +118,15 @@ while True:
     # imgL       = cv image in BGR format (Left Camera)
     # imgR       = cv image in BGR format (Right Camera)
     
-	lGreen = np.array([0,100,0],np.uint8)
-	uGreen = np.array([50,255,50],np.uint8)
+    lGreen = np.array([0,100,0],np.uint8)
+    uGreen = np.array([50,255,50],np.uint8)
 
-	left = cv2.inRange(imgL,lGreen,uGreen).nonzero()[1]
-	right = cv2.inRange(imgR,lGreen,uGreen).nonzero()[1]
+    left = cv2.inRange(imgL,lGreen,uGreen).nonzero()[1]
+    right = cv2.inRange(imgR,lGreen,uGreen).nonzero()[1]
 
-	ddx = abs(right.mean() - left.mean())
-	distance = (0.4 * 0.085) / (ddx * 0.000280)
-	print "Distance = ",distance
+    ddx = abs(right.mean() - left.mean())
+    distance = (0.4 * 0.085) / (ddx * 0.000280)
+    print "Distance = ",distance
 
     # Sleeps
     time.sleep(0.1)   

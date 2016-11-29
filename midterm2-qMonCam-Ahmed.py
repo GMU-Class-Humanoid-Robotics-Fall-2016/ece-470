@@ -117,32 +117,18 @@ while True:
     # imgL       = cv image in BGR format (Left Camera)
     # imgR       = cv image in BGR format (Right Camera)
 
-	rows = imgR.shape[0]
-	columns = imgR.shape[1]
+    lYellow = np.array([0,100,100],np.uint8)
+    uYellow = np.array([50,255,255],np.uint8)
 
-	lYellow = ([0,100,100],np.uint8)
-	uYellow = ([50,255,255],np.uint8)
+    area = len(cv2.inRange(imgR, lYellow, uYellow).nonzero()[0])
+    
+    if area > 0:
+        radius = np.sqrt(area / np.pi)
+        center = 0.5 / np.tan(radius / (1.047 * 320.0))
+        distance = center - 0.5
+        print "Distance: ", distance
 
-	area = cv2.inRange(imgR, lYellow, uYellow)
-
-	trackX = 0
-	trackY = 0
-	trackArea = 0
-
-	for x in range(colums):
-		for y in range(rows):
-			if area[y,x] > 0:
-				trackX += x
-				trackY += y
-				trackArea += 1
-
-	if trackArea > 0:
-		radius = np.sqrt(trackArea / np.pi)
-		dpix = (columns / 2) / np.tan(1.047 / 2.0)
-		distance = (0.5 / radius) * dpix
-		print "Distance: ", distance
-
-    # Sleeps
+	# Sleeps
     time.sleep(0.1)   
 #-----------------------------------------------------
 #-----------------------------------------------------
