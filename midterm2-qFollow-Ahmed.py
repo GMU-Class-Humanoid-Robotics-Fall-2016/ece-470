@@ -117,10 +117,31 @@ while True:
     # tim.sim[0] = Sim Time
     # imgL       = cv image in BGR format (Left Camera)
     # imgR       = cv image in BGR format (Right Camera)
-    
-    ref.ref[0] = -0.5
-    ref.ref[1] = 0.5
+   
+    lGreen = np.array([0,100,0],np.uint8)
+    uGreen = np.array([50,255,50],np.uint8)
 
+    track = (cv2.inRange(imgL,lGreen,uGreen).nonzero()[1])
+
+    p = 0.04
+    i = 1.0
+    d = 2.0/3.0
+    windows = np.zeros((2,6))
+    myTime = 0
+
+    if len(track) > 0:
+        dt = tim.sim[0] - myTime
+        pError = track.mean() - 160
+        iError = windows.prod(0).sum() + pError*dt
+        dError = (pError - windows[0,0])/dt
+        limits = min(max((p*pError + i*iError + d*dError),-0.2),0.2)
+        ref.ref[0] = -limits
+        ref.ref[1] = limits
+        myTime = tim.sim[0]
+        windows = np.roll(windows,1)
+        windows[0,0] = pError
+        windows[0,1] = dt
+        print "Simulation time = ",tim.sim[0]
 
     # Commands Robot
     r.put(ref)
