@@ -41,12 +41,10 @@ ref = dd.H_REF()
 tim = dd.H_TIME()
 
 ROBOT_DIFF_DRIVE_CHAN   = 'robot-diff-drive'
-ROBOT_CHAN_VIEW_R   = 'robot-vid-chan-r'
-ROBOT_CHAN_VIEW_L   = 'robot-vid-chan-l'
+ROBOT_CHAN_VIEW   = 'robot-vid-chan'
 ROBOT_TIME_CHAN  = 'robot-time'
 # CV setup 
-cv.NamedWindow("wctrl_L", cv.CV_WINDOW_AUTOSIZE)
-cv.NamedWindow("wctrl_R", cv.CV_WINDOW_AUTOSIZE)
+cv.NamedWindow("wctrl", cv.CV_WINDOW_AUTOSIZE)
 #capture = cv.CaptureFromCAM(0)
 #capture = cv2.VideoCapture(0)
 
@@ -55,15 +53,13 @@ cv.NamedWindow("wctrl_R", cv.CV_WINDOW_AUTOSIZE)
 newx = 320
 newy = 240
 
-nx = 320
-ny = 240
+nx = 640
+ny = 480
 
 r = ach.Channel(ROBOT_DIFF_DRIVE_CHAN)
 r.flush()
-vl = ach.Channel(ROBOT_CHAN_VIEW_L)
-vl.flush()
-vr = ach.Channel(ROBOT_CHAN_VIEW_R)
-vr.flush()
+v = ach.Channel(ROBOT_CHAN_VIEW)
+v.flush()
 t = ach.Channel(ROBOT_TIME_CHAN)
 t.flush()
 
@@ -77,25 +73,15 @@ print '========= dan@danLofaro.com =========='
 print '======================================'
 while True:
     # Get Frame
-    imgL = np.zeros((newx,newy,3), np.uint8)
-    imgR = np.zeros((newx,newy,3), np.uint8)
-    c_image = imgL.copy()
-    c_image = imgR.copy()
-    vidL = cv2.resize(c_image,(newx,newy))
-    vidR = cv2.resize(c_image,(newx,newy))
-    [status, framesize] = vl.get(vidL, wait=False, last=True)
+    img = np.zeros((newx,newy,3), np.uint8)
+    c_image = img.copy()
+    vid = cv2.resize(c_image,(newx,newy))
+    [status, framesize] = v.get(vid, wait=False, last=True)
     if status == ach.ACH_OK or status == ach.ACH_MISSED_FRAME or status == ach.ACH_STALE_FRAMES:
-        vid2 = cv2.resize(vidL,(nx,ny))
-        imgL = cv2.cvtColor(vid2,cv2.COLOR_BGR2RGB)
-        cv2.imshow("wctrl_L", imgL)
-        cv2.waitKey(10)
-    else:
-        raise ach.AchException( v.result_string(status) )
-    [status, framesize] = vr.get(vidR, wait=False, last=True)
-    if status == ach.ACH_OK or status == ach.ACH_MISSED_FRAME or status == ach.ACH_STALE_FRAMES:
-        vid2 = cv2.resize(vidR,(nx,ny))
-        imgR = cv2.cvtColor(vid2,cv2.COLOR_BGR2RGB)
-        cv2.imshow("wctrl_R", imgR)
+        vid2 = cv2.resize(vid,(nx,ny))
+        img = cv2.cvtColor(vid2,cv2.COLOR_BGR2RGB)
+        #print 'shape = ',img.shape
+        cv2.imshow("wctrl", img)
         cv2.waitKey(10)
     else:
         raise ach.AchException( v.result_string(status) )
@@ -109,44 +95,84 @@ while True:
         raise ach.AchException( v.result_string(status) )
 
 #-----------------------------------------------------
-#-----------------------------------------------------
+#--------[ Do not edit above ]------------------------
 #-----------------------------------------------------
     # Def:
     # ref.ref[0] = Right Wheel Velos
     # ref.ref[1] = Left Wheel Velos
     # tim.sim[0] = Sim Time
-    # imgL       = cv image in BGR format (Left Camera)
-    # imgR       = cv image in BGR format (Right Camera)
-   
-    lGreen = np.array([0,100,0],np.uint8)
+    # img        = cv image in BGR format
+
+    ref.ref[0] = -0.5
+    ref.ref[1] = 0.5
+
+    print 'Sim Time = ', tim.sim[0]
+    
+    new_img = np.zeros((240,320,3), np.uint8)
+    for x in range(240):
+        for y in range(320):
+                new_img[x,y,0] = img[x*2,y*2,0]
+                new_img[x,y,1] = img[x*2,y*2,1]
+                new_img[x,y,2] = img[x*2,y*2,2]
+    cv2.imshow("resized_wctrl", new_img)
+
+
+    bw_img = np.zeros((480,640,3), np.uint8)
+    bw_img[:,:,0] = img[:,:,0]
+    bw_img[:,:,1] = img[:,:,0]
+    bw_img[:,:,2] = img[:,:,0]
+    cv2.imshow("bw_wctrl", bw_img)
+
+
+    trk_img = cv2.cvtColor(vid2,cv2.COLOR_BGR2RGB)
+
+    uRed = np.array([50,50,255],np.uint8)
+    lRed = np.array([0,0,100],np.uint8)
+    uBlue = np.array([255,50,50],np.uint8)
+    lBlue = np.array([100,0,0],np.uint8)
     uGreen = np.array([50,255,50],np.uint8)
+    lGreen = np.array([0,100,0],np.uint8)
 
-    track = (cv2.inRange(imgL,lGreen,uGreen).nonzero()[1])
+    tBlue = cv2.inRange(trk_img,lBlue,uBlue)
+    tRed = cv2.inRange(trk_img,lRed,uRed)
+    tGreen = cv2.inRange(trk_img,lGreen,uGreen)
 
-    p = 0.04
-    i = 1.0
-    d = 2.0/3.0
-    windows = np.zeros((2,6))
-    myTime = 0
+    cntBlue = cv2.findContours(tBlue.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[0]
+    cntRed = cv2.findContours(tRed,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[0]
+    cntGreen = cv2.findContours(tGreen,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[0]
 
-    if len(track) > 0:
-        dt = tim.sim[0] - myTime
-        pError = track.mean() - 160
-        iError = windows.prod(0).sum() + pError*dt
-        dError = (pError - windows[0,0])/dt
-        limits = min(max((p*pError + i*iError + d*dError),-0.2),0.2)
-        ref.ref[0] = -limits
-        ref.ref[1] = limits
-        myTime = tim.sim[0]
-        windows = np.roll(windows,1)
-        windows[0,0] = pError
-        windows[0,1] = dt
-        print "Simulation time = ",tim.sim[0]
+    if len(cntBlue) > 0:
+      for cnt in cntBlue:
+        (x,y),radius = cv2.minEnclosingCircle(cnt)
+        center = (int(x),int(y))
+        cv2.circle(trk_img,center,10,(255,255,255),5)
+    elif len(cntRed) > 0:
+      for cnt in cntRed:
+        (x,y),radius = cv2.minEnclosingCircle(cnt)
+        center = (int(x),int(y))
+        cv2.circle(trk_img,center,10,(255,255,255),5)
+    elif len(cntGreen) > 0:
+      for cnt in cntGreen:
+        (x,y),radius = cv2.minEnclosingCircle(cnt)
+        center = (int(x),int(y))
+        cv2.circle(trk_img,center,10,(255,255,255),5)
 
-    # Commands Robot
-    r.put(ref)
+    cv2.imshow("trk_wctrl", trk_img)
+
+    erode_img = cv2.cvtColor(vid2,cv2.COLOR_BGR2RGB)
+    erode_img = cv2.erode(erode_img,np.ones((5,5),np.uint8),iterations=1)
+    cv2.imshow("erode_wctrl",erode_img)
+
+    dilate_img = cv2.cvtColor(vid2,cv2.COLOR_BGR2RGB)
+    dilate_img = cv2.dilate(dilate_img,np.ones((5,5),np.uint8),iterations=1)
+    cv2.imshow("dilate_wctrl",dilate_img)
+
+
+    # Sets reference to robot
+    r.put(ref);
+
     # Sleeps
     time.sleep(0.1)   
 #-----------------------------------------------------
-#-----------------------------------------------------
+#--------[ Do not edit below ]------------------------
 #-----------------------------------------------------
